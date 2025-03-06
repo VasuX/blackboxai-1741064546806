@@ -1,10 +1,9 @@
 import styled from '@emotion/styled';
 
-const TabContainer = styled.div`
+const TabList = styled.div`
   display: flex;
-  gap: 1rem;
-  border-bottom: 1px solid #e2e8f0;
-  margin-bottom: 1rem;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: -2px;
 `;
 
 const Tab = styled.button`
