@@ -1,0 +1,1 @@
+allowedHosts: ['qfyqqz-3001.csb.app'], // Added allowed host
