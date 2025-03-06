@@ -28,12 +28,15 @@ const AttendanceContainer = styled.div`
   margin-bottom: 2rem;
 `;
 
+const TabContainer = styled.div`
+  margin-bottom: 1rem;
+`;
+
 const ContentContainer = styled.div`
-  background: #f8fafc;
+  background: #ffffff;
   border-radius: 8px;
-  padding: 1.5rem;
-  margin-top: 1rem;
-  min-height: 400px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 `;
 
 function App() {
@@ -78,7 +81,9 @@ function App() {
           variant="purple" 
         />
       </AttendanceContainer>
-      <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      <TabContainer>
+        <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      </TabContainer>
       <ContentContainer>
         {activeTab === 'tasks' && <TaskCard onStatsUpdate={updateTaskStats} />}
         {activeTab === 'progress' && <ProgressOverview />}
