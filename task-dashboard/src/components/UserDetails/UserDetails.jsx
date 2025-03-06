@@ -1,46 +1,71 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState } from 'react';
 import styled from '@emotion/styled';
 import { FaPlus, FaTrash, FaEdit, FaSave, FaTimes } from 'react-icons/fa';
 
 const Container = styled.div`
-  padding: 1rem;
+  padding: 2rem;
 `;
 
-const UserCard = styled.div`
+const Header = styled.div`
+  margin-bottom: 2rem;
+`;
+
+const Title = styled.h2`
+  font-size: 1.25rem;
+  color: #1e293b;
+  font-weight: 600;
+  margin: 0;
+`;
+
+const FormContainer = styled.div`
   background: white;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+`;
+
+const Form = styled.form`
   display: flex;
-  justify-content: space-between;
+  gap: 1rem;
   align-items: center;
 `;
 
 const Input = styled.input`
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  margin-right: 1rem;
-  width: 200px;
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: #1e293b;
+  transition: all 0.2s;
+
   &:focus {
     outline: none;
     border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  &::placeholder {
+    color: #94a3b8;
   }
 `;
 
 const Button = styled.button`
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1rem;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   background: ${props => props.primary ? '#3b82f6' : props.danger ? '#ef4444' : '#f1f5f9'};
   color: ${props => props.primary || props.danger ? 'white' : '#64748b'};
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
   transition: all 0.2s;
+  white-space: nowrap;
 
   &:hover {
     opacity: 0.9;
@@ -50,6 +75,10 @@ const Button = styled.button`
   &:active {
     transform: translateY(0);
   }
+
+  svg {
+    font-size: 1rem;
+  }
 `;
 
 const ButtonGroup = styled.div`
@@ -57,146 +86,155 @@ const ButtonGroup = styled.div`
   gap: 0.5rem;
 `;
 
-const Form = styled.form`
-  display: flex;
-  margin-bottom: 1rem;
-  background: white;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
 const UserList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  margin-top: 1rem;
+`;
+
+const UserCard = styled.div`
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+  }
+`;
+
+const UserName = styled.span`
+  font-size: 1rem;
+  color: #1e293b;
+  font-weight: 500;
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 3rem 2rem;
+  background: white;
+  border: 2px dashed #e2e8f0;
+  border-radius: 8px;
+  color: #64748b;
 `;
 
 const UserDetails = () => {
   const [users, setUsers] = useState(() => {
-    const savedUsers = localStorage.getItem('users');
-    try {
-      return savedUsers ? JSON.parse(savedUsers) : [];
-    } catch (e) {
-      console.error('Error loading saved users:', e);
-      return [];
-    }
+    const savedUsers = localStorage.getItem('dashboard_users');
+    return savedUsers ? JSON.parse(savedUsers) : [];
   });
   
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState('');
 
-  // Save changes to localStorage
-  useEffect(() => {
-    console.log('Saving users:', users);
-    localStorage.setItem('users', JSON.stringify(users));
-  }, [users]);
-
-  const handleSubmit = useCallback((e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form submitted with name:', newName);
-    
-    if (!newName.trim()) {
-      console.log('Name is empty, not adding');
-      return;
-    }
+    if (!newName.trim()) return;
     
     const newUser = {
       id: Date.now(),
       name: newName.trim()
     };
     
-    console.log('Adding new user:', newUser);
-    setUsers(prevUsers => {
-      const updatedUsers = [...prevUsers, newUser];
-      console.log('Updated users list:', updatedUsers);
-      return updatedUsers;
-    });
+    setUsers(prev => [...prev, newUser]);
     setNewName('');
-  }, [newName]);
+    localStorage.setItem('dashboard_users', JSON.stringify([...users, newUser]));
+  };
 
-  const handleEdit = useCallback((user) => {
-    console.log('Editing user:', user);
+  const handleEdit = (user) => {
     setEditingId(user.id);
     setEditName(user.name);
-  }, []);
+  };
 
-  const handleSave = useCallback((id) => {
-    console.log('Saving edit for user:', id);
+  const handleSave = (id) => {
     if (!editName.trim()) return;
     
-    setUsers(prevUsers => 
-      prevUsers.map(user => 
-        user.id === id ? { ...user, name: editName.trim() } : user
-      )
+    const updatedUsers = users.map(user =>
+      user.id === id ? { ...user, name: editName.trim() } : user
     );
+    
+    setUsers(updatedUsers);
     setEditingId(null);
     setEditName('');
-  }, [editName]);
+    localStorage.setItem('dashboard_users', JSON.stringify(updatedUsers));
+  };
 
-  const handleDelete = useCallback((id) => {
-    console.log('Deleting user:', id);
-    setUsers(prevUsers => prevUsers.filter(user => user.id !== id));
-  }, []);
-
-  console.log('Current users:', users);
+  const handleDelete = (id) => {
+    const filteredUsers = users.filter(user => user.id !== id);
+    setUsers(filteredUsers);
+    localStorage.setItem('dashboard_users', JSON.stringify(filteredUsers));
+  };
 
   return (
     <Container>
-      <Form onSubmit={handleSubmit}>
-        <Input
-          type="text"
-          value={newName}
-          onChange={(e) => {
-            console.log('Input changed:', e.target.value);
-            setNewName(e.target.value);
-          }}
-          placeholder="Enter name"
-          aria-label="User name"
-        />
-        <Button primary type="submit">
-          <FaPlus /> Add User
-        </Button>
-      </Form>
+      <Header>
+        <Title>User Management</Title>
+      </Header>
 
-      <UserList>
-        {users.map(user => (
-          <UserCard key={user.id}>
-            {editingId === user.id ? (
-              <>
-                <Input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  aria-label="Edit user name"
-                />
-                <ButtonGroup>
-                  <Button primary onClick={() => handleSave(user.id)}>
-                    <FaSave /> Save
-                  </Button>
-                  <Button onClick={() => setEditingId(null)}>
-                    <FaTimes /> Cancel
-                  </Button>
-                </ButtonGroup>
-              </>
-            ) : (
-              <>
-                <span>{user.name}</span>
-                <ButtonGroup>
-                  <Button onClick={() => handleEdit(user)}>
-                    <FaEdit /> Edit
-                  </Button>
-                  <Button danger onClick={() => handleDelete(user.id)}>
-                    <FaTrash /> Delete
-                  </Button>
-                </ButtonGroup>
-              </>
-            )}
-          </UserCard>
-        ))}
-      </UserList>
+      <FormContainer>
+        <Form onSubmit={handleSubmit}>
+          <Input
+            type="text"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Enter user name"
+            aria-label="User name"
+          />
+          <Button primary type="submit">
+            <FaPlus /> Add User
+          </Button>
+        </Form>
+      </FormContainer>
+
+      {users.length > 0 ? (
+        <UserList>
+          {users.map(user => (
+            <UserCard key={user.id}>
+              {editingId === user.id ? (
+                <>
+                  <Input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    aria-label="Edit user name"
+                  />
+                  <ButtonGroup>
+                    <Button primary onClick={() => handleSave(user.id)}>
+                      <FaSave /> Save
+                    </Button>
+                    <Button onClick={() => setEditingId(null)}>
+                      <FaTimes /> Cancel
+                    </Button>
+                  </ButtonGroup>
+                </>
+              ) : (
+                <>
+                  <UserName>{user.name}</UserName>
+                  <ButtonGroup>
+                    <Button onClick={() => handleEdit(user)}>
+                      <FaEdit /> Edit
+                    </Button>
+                    <Button danger onClick={() => handleDelete(user.id)}>
+                      <FaTrash /> Delete
+                    </Button>
+                  </ButtonGroup>
+                </>
+              )}
+            </UserCard>
+          ))}
+        </UserList>
+      ) : (
+        <EmptyState>
+          No users added yet. Add a user using the form above.
+        </EmptyState>
+      )}
     </Container>
   );
 };
